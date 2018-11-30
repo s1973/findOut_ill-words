@@ -10,8 +10,8 @@ configs = {
         "db": 'hb_mpm'
     },
     'db2':{
-        'host': "182.61.19.140",
+        'host': "10.0.0.232",
         "user": "root",
-        "password": "baidujx2015"
+        "password": "17e0ab4a0bdc3871"
     }
 }
