@@ -32,7 +32,7 @@ def regExpress():
     rs = orm.query(r'select word from illegal_words', **db_local)
     reg = r''
     for w in rs:
-        reg += w['word']+r'|'
+        reg += (w['word'] + r'|') if w['word'] != r'*' else ('\\' +w['word'] + r'|')
     reg = reg.strip('|')
     logging.info('re：'+reg)
     return re.compile(reg, re.U)
