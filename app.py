@@ -17,7 +17,7 @@ from multiprocessing import Pool
 db_local = configs.db
 db_remote = configs.db2
 
-async def addWords(file='asset/illegal_words.txt', override=True):
+def addWords(file='asset/illegal_words.txt', override=True):
     if override:
         orm.query(r'delete from `illegal_words`', **db_local)
     with open(file, 'r', encoding='UTF-8') as f:
@@ -57,7 +57,7 @@ def save(data):
 
 
 def fetchSites():
-    sites = orm.query(r'select * from site order by id asc', **db_local)
+    sites = orm.query(r'select * from site order by id asc limit 10', **db_local)
     return sites
 
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     result = [] 
     p = Pool(10)
     sites = fetchSites()
-    # await addWords()
+    # addWords()
     pattern = regExpress()
     for i in range(len(sites)):
         r = p.apply_async(entry, args=(sites[i],pattern, i,))
