@@ -13,6 +13,7 @@ logging.basicConfig(
     format="[%(asctime)s] %(name)s:%(levelname)s: %(message)s"
 )
 from multiprocessing import Pool
+from openpyxl import Workbook
 
 db_local = configs.db
 db_remote = configs.db2
@@ -43,7 +44,12 @@ async def findOut(pattern, string):
     if rs:logging.info('结果：'+','.join(rs))
     return rs
 
-def save(data):
+def save(data, override=True):
+    if override:
+        orm.query(r'delete from `illegal_result`', **db_local)
+    wb = Workbook()
+    ws = wb.active
+    ws.append(['违禁词','次数统计','地址','站点名','域名','文章标题','栏目'])
     sql = r"insert into `illegal_result` (`keys`,title,postid,parent_id,class_name,t_table,created_at,sitename,domain,en_project,siteid,url) values "
     for site in data:
         for i in site:
@@ -52,13 +58,23 @@ def save(data):
                 sql+="'"+str(v)+"',"
             sql=sql.strip(',')
             sql += '),'
+
+            ws.append([
+                i['keys'],
+                len(i['keys'].split(',')),
+                i['url'],
+                i['sitename'],
+                i['domain'],
+                i['title'],
+                i['class_name'],
+            ])
     sql = sql.strip(',')
-    print(sql)
+    wb.save('asset/'+'result'+time.strftime("%Y-%m-%d", time.localtime())+'.xlsx')
     orm.query(sql,**db_local)
 
 
 def fetchSites():
-    sites = orm.query(r'select * from site order by id asc limit 10', **db_local)
+    sites = orm.query(r'select * from site order by id desc limit 50', **db_local)
     return sites
 
 
@@ -115,7 +131,9 @@ if __name__ == '__main__':
     data = []
     for res in result:
         data.append(res.get())
-    if data:save(data)
-    with open('asset/'+'result'+time.strftime("%Y-%m-%d", time.localtime())+'.txt', 'w', encoding='UTF-8') as f:
-        for line in data:
-            f.write('%s\n' % line)
+
+    if data:
+        save(data)
+    # with open('asset/'+'result'+time.strftime("%Y-%m-%d", time.localtime())+'.txt', 'w', encoding='UTF-8') as f:
+    #     for line in data:
+    #         f.write('%s\n' % line)
