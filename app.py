@@ -44,13 +44,14 @@ async def findOut(pattern, string):
     return rs
 
 def save(data):
-    sql = r"insert into `illegal_result` (`keys`,title,postid,parent_id,class_name,t_table,created_at,sitename,domain,en_project,siteid,url) value "
-    for i in data:
-        sql += '('
-        for v in i.values():
-            sql+="'"+str(v)+"',"
-        sql=sql.strip(',')
-        sql += '),'
+    sql = r"insert into `illegal_result` (`keys`,title,postid,parent_id,class_name,t_table,created_at,sitename,domain,en_project,siteid,url) values "
+    for site in data:
+        for i in site:
+            sql += '('
+            for v in i.values():
+                sql+="'"+str(v)+"',"
+            sql=sql.strip(',')
+            sql += '),'
     sql = sql.strip(',')
     print(sql)
     orm.query(sql,**db_local)
@@ -83,9 +84,8 @@ async def init(loop,site,pattern):
                     'domain': site['domain'],
                     'en_project': site['en_project'],
                     'siteid':site['id'],
-                    'url':r'http://'+site['domain']+'/view'+p['parent_id']+'-'+p['id']+r'.html'
+                    'url':r'http://'+site['domain']+'/view'+str(p['parent_id'])+'-'+str(p['id'])+r'.html'
                 })
-    if data:save(data)
     return data
 
 def entry(site,pattern,i):
@@ -115,6 +115,7 @@ if __name__ == '__main__':
     data = []
     for res in result:
         data.append(res.get())
+    if data:save(data)
     with open('asset/'+'result'+time.strftime("%Y-%m-%d", time.localtime())+'.txt', 'w', encoding='UTF-8') as f:
         for line in data:
             f.write('%s\n' % line)
